@@ -6,8 +6,7 @@ var contract
 var accounts
 var web3
 
-function metamaskReloadCallback()
-{
+function metamaskReloadCallback() {
   window.ethereum.on('accountsChanged', (accounts) => {
     document.getElementById("web3_message").textContent="Se cambió el account, refrescando...";
     window.location.reload()
@@ -79,20 +78,45 @@ async function loadDapp() {
   awaitWeb3();
 }
 
-function contractInitCallback()
-{
-  for(i=0; i<UNLOCKS; i++)
-  {
-    timestamp = await contract.methods.unlock_time(i).call()
-    console.log(timestamp)
-  }
-
+const contractInitCallback = async () => {
   user_release_amount = await contract.methods.beneficiary_release_amount().call()
 
-  for(i=0; i<UNLOCKS; i++)
+  var parent = document.getElementById("claim_buttons")
+  if(user_release_amount > 0)
   {
-    user_has_claimed = await contract.methods.beneficiary_has_claimed(accounts[0],i).call()
-    console.log(i + user_has_claimed)
+    for(i=0; i<UNLOCKS; i++)
+    {
+      user_has_claimed = await contract.methods.beneficiary_has_claimed(accounts[0],i).call()
+      console.log(i + user_has_claimed)
+      if(!user_has_claimed)
+      {
+        timestamp = await contract.methods.unlock_time(i).call()
+        if(timestamp > current_time)
+        {
+          var btn = document.createElement("button")
+          btn.innerHTML = "Claim!"
+          btn.onclick = function () {
+            claim(i)
+          }
+          parernt.appendChild(btn);
+        }else
+        {
+          claimed_p = document.createElement("p")
+          claimed_p.innerHTML = "Please claim on " + timestamp
+          parent.appendChild(claimed_p)
+        }
+      }else
+      {
+        claimed_p = document.createElement("p")
+        claimed_p.innerHTML = "Claimed"
+        parent.appendChild(claimed_p)
+      }
+    }
+  }else
+  {
+    claimed_p = document.createElement("p")
+    claimed_p.innerHTML = "No timelocks found for this account"
+    parent.appendChild(claimed_p)
   }
 }
 
@@ -161,7 +185,7 @@ const addBenefiaryBatch = async (beneficiaries, release_amounts) => {
 }
 
 /*
-await addUnlockTime(2, "1395103695")
+await addUnlockTime(2, "1641508298")
 */
 const addUnlockTime = async (unlock_number, timestamp) => {
   const result = await contract.methods.addUnlockTime(unlock_number, timestamp)
@@ -179,13 +203,29 @@ const addUnlockTime = async (unlock_number, timestamp) => {
 
 /*
 await addUnlockTimeBatch(
-  ["1395103695", "1395103695", "1395103695", "1395103695"])
+  ["1641508298", "1641508298", "1641508298", "1641508298"])
 */
 const addUnlockTimeBatch = async (unlock_times, timestamps) => {
   const result = await contract.methods.addUnlockTimeBatch(unlock_times, timestamps)
   .send({ from: accounts[0], gas: 0, value: 0 })
   .on('transactionHash', function(hash){
     document.getElementById("web3_message").textContent="Adding beneficiary...";
+  })
+  .on('receipt', function(receipt){
+    document.getElementById("web3_message").textContent="Success.";    })
+  .catch((revertReason) => {
+    console.log("ERROR! Transaction reverted: " + revertReason.receipt.transactionHash)
+  });
+}
+
+/*
+await withdrawAllTokens()
+*/
+const withdrawAllTokens = async (unlock_times, timestamps) => {
+  const result = await contract.methods.withdrawAllTokens()
+  .send({ from: accounts[0], gas: 0, value: 0 })
+  .on('transactionHash', function(hash){
+    document.getElementById("web3_message").textContent="Withdrawing...";
   })
   .on('receipt', function(receipt){
     document.getElementById("web3_message").textContent="Success.";    })

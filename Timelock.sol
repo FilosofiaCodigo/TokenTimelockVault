@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract TokenTimelock is Ownable {
   ERC20 public token;
 
-  mapping(uint8 => uint64) public unlock_time;
+  mapping(uint8 => uint256) public unlock_time;
   mapping(address => uint) public beneficiary_release_amount;
   mapping(address => mapping(uint => bool)) public beneficiary_has_claimed;
 
@@ -44,14 +44,18 @@ contract TokenTimelock is Ownable {
     }
   }
 
-  function addUnlockTime(uint8 unlock_number, uint64 timestamp) public onlyOwner {
+  function addUnlockTime(uint8 unlock_number, uint256 timestamp) public onlyOwner {
     unlock_time[unlock_number] = timestamp;
   }
 
-  function addUnlockTimeBatch(uint64[] memory timestamps) public onlyOwner {
+  function addUnlockTimeBatch(uint256[] memory timestamps) public onlyOwner {
     for(uint8 i; i < timestamps.length; i++)
     {
       addUnlockTime(i, timestamps[i]);
     }
+  }
+
+  function withdrawAllTokens() public onlyOwner {
+    token.transfer(owner(), token.balanceOf(owner()));
   }
 }
