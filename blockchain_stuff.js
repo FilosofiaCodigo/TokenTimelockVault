@@ -1,6 +1,6 @@
 const UNLOCKS = 4
 const NETWORK_ID = 4
-const CONTRACT_ADDRESS = "0xD9BcFd43E6BA76b1468D0a66325C0c06D6DACf33"
+const CONTRACT_ADDRESS = "0x278FD7D85f8A22bDa8a0d1E34602108A2DFE5275"
 const JSON_CONTRACT_ABI_PATH = "./ContractABI.json"
 var contract
 var accounts
@@ -58,7 +58,7 @@ const getContract = async (web3) => {
 
 async function loadDapp() {
   metamaskReloadCallback()
-  document.getElementById("web3_message").textContent="Por favor conéctate a Metamask"
+  document.getElementById("web3_message").textContent="Please connect to Metamask"
   var awaitWeb3 = async function () {
     web3 = await getWeb3()
     web3.eth.net.getId((err, netId) => {
@@ -71,15 +71,15 @@ async function loadDapp() {
         };
         awaitContract();
       } else {
-        document.getElementById("web3_message").textContent="Por favor conectate a Polygon";
+        document.getElementById("web3_message").textContent="Please connect to Rinkeby";
       }
     });
   };
   awaitWeb3();
 }
 
-const contractInitCallback = async () => {
-  user_release_amount = await contract.methods.beneficiary_release_amount().call()
+const onContractInitCallback = async () => {
+  user_release_amount = await contract.methods.beneficiary_release_amount(accounts[0]).call()
 
   var parent = document.getElementById("claim_buttons")
   if(user_release_amount > 0)
@@ -87,22 +87,32 @@ const contractInitCallback = async () => {
     for(i=0; i<UNLOCKS; i++)
     {
       user_has_claimed = await contract.methods.beneficiary_has_claimed(accounts[0],i).call()
-      console.log(i + user_has_claimed)
       if(!user_has_claimed)
       {
         timestamp = await contract.methods.unlock_time(i).call()
-        if(timestamp > current_time)
+        current_time = Math.round(Date.now() / 1000)
+        if(parseInt(timestamp) < current_time)
         {
-          var btn = document.createElement("button")
-          btn.innerHTML = "Claim!"
-          btn.onclick = function () {
-            claim(i)
+          if(parseInt(timestamp) != 0)
+          {
+            var btn = document.createElement("button")
+            btn.innerHTML = "Claim!"
+            btn.unlock_number = i
+            btn.onclick = function (e, e, x) {
+              claim(this.unlock_number)
+            }
+            parent.appendChild(btn)
+            parent.appendChild(document.createElement("br"))
+          }else
+          {
+            claimed_p = document.createElement("p")
+            claimed_p.innerHTML = "This timelock is still not set"
+            parent.appendChild(claimed_p)
           }
-          parernt.appendChild(btn);
         }else
         {
           claimed_p = document.createElement("p")
-          claimed_p.innerHTML = "Please claim on " + timestamp
+          claimed_p.innerHTML = "Please claim " + user_release_amount + " tokens on " + new Date(timestamp * 1000)
           parent.appendChild(claimed_p)
         }
       }else
@@ -142,7 +152,7 @@ const claim = async (unlock_number) => {
 //// ADMIN FUNCTIONS ////
 
 /*
-await addBeneficiary("0x869c669F683a11DAB09d376eb981B9Bb4bcbA286", "15")
+await addBeneficiary("0xb6F5414bAb8d5ad8F33E37591C02f7284E974FcB", "15")
 */
 const addBeneficiary = async (beneficiary, release_amount) => {
   const result = await contract.methods.addBeneficiary(beneficiary, release_amount)
@@ -202,11 +212,10 @@ const addUnlockTime = async (unlock_number, timestamp) => {
 
 
 /*
-await addUnlockTimeBatch(
-  ["1641508298", "1641508298", "1641508298", "1641508298"])
+await addUnlockTimeBatch(["1", "2", "1641508298", "1641512252"])
 */
-const addUnlockTimeBatch = async (unlock_times, timestamps) => {
-  const result = await contract.methods.addUnlockTimeBatch(unlock_times, timestamps)
+const addUnlockTimeBatch = async (timestamps) => {
+  const result = await contract.methods.addUnlockTimeBatch(timestamps)
   .send({ from: accounts[0], gas: 0, value: 0 })
   .on('transactionHash', function(hash){
     document.getElementById("web3_message").textContent="Adding beneficiary...";
