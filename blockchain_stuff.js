@@ -67,6 +67,7 @@ async function loadDapp() {
           contract = await getContract(web3);
           await window.ethereum.request({ method: "eth_requestAccounts" })
           accounts = await web3.eth.getAccounts()
+          document.getElementById("web3_message").textContent="You are connected to Metamask"
           onContractInitCallback()
         };
         awaitContract();
@@ -86,6 +87,10 @@ const onContractInitCallback = async () => {
   {
     for(i=0; i<UNLOCKS; i++)
     {
+      var unlock_h = document.createElement("h3")
+      unlock_h.innerHTML = "Unlock #" + (i+1)
+      parent.appendChild(unlock_h)
+
       user_has_claimed = await contract.methods.beneficiary_has_claimed(accounts[0],i).call()
       if(!user_has_claimed)
       {
@@ -112,7 +117,7 @@ const onContractInitCallback = async () => {
         }else
         {
           claimed_p = document.createElement("p")
-          claimed_p.innerHTML = "Please claim " + user_release_amount + " tokens on " + new Date(timestamp * 1000)
+          claimed_p.innerHTML = "Please claim " + web3.utils.fromWei(user_release_amount) + " tokens on " + new Date(timestamp * 1000)
           parent.appendChild(claimed_p)
         }
       }else
@@ -152,10 +157,10 @@ const claim = async (unlock_number) => {
 //// ADMIN FUNCTIONS ////
 
 /*
-await addBeneficiary("0xb6F5414bAb8d5ad8F33E37591C02f7284E974FcB", "15")
+await addBeneficiary("0x730bF3B67090511A64ABA060FbD2F7903536321E", "15")
 */
 const addBeneficiary = async (beneficiary, release_amount) => {
-  const result = await contract.methods.addBeneficiary(beneficiary, release_amount)
+  const result = await contract.methods.addBeneficiary(beneficiary, web3.utils.toWei(release_amount))
   .send({ from: accounts[0], gas: 0, value: 0 })
   .on('transactionHash', function(hash){
     document.getElementById("web3_message").textContent="Adding beneficiary...";
@@ -212,7 +217,7 @@ const addUnlockTime = async (unlock_number, timestamp) => {
 
 
 /*
-await addUnlockTimeBatch(["1", "2", "1641508298", "1641512252"])
+await addUnlockTimeBatch(["1", "2", "1642637930", "1643501930"])
 */
 const addUnlockTimeBatch = async (timestamps) => {
   const result = await contract.methods.addUnlockTimeBatch(timestamps)

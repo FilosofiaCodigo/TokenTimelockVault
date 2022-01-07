@@ -22,7 +22,9 @@ contract TokenTimelock is Ownable {
   function claim(uint8 unlock_number) public {
     require(unlock_time[unlock_number] > 0);
     require(block.timestamp >= unlock_time[unlock_number]);
-    requirelamplaimed[msg.sender][unlock_number] = true;
+    require(beneficiary_has_claimed[msg.sender][unlock_number] == false);
+
+    beneficiary_has_claimed[msg.sender][unlock_number] = true;
 
     uint256 amount = beneficiary_release_amount[msg.sender];
     require(amount > 0);
