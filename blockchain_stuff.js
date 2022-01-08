@@ -1,6 +1,6 @@
 const UNLOCKS = 4
 const NETWORK_ID = 4
-const CONTRACT_ADDRESS = "0x278FD7D85f8A22bDa8a0d1E34602108A2DFE5275"
+const CONTRACT_ADDRESS = "0x53918Aeed746a837437DEa6f9f3F4Bb8EA915614"
 const JSON_CONTRACT_ABI_PATH = "./ContractABI.json"
 var contract
 var accounts
@@ -186,7 +186,12 @@ await addBenefiaryBatch(
     "150"]
   )
 */
+
 const addBenefiaryBatch = async (beneficiaries, release_amounts) => {
+  for(i=0; i<release_amounts.length; i++)
+  {
+    release_amounts[i] = web3.utils.toWei(release_amounts[i])
+  }
   const result = await contract.methods.addBenefiaryBatch(beneficiaries, release_amounts)
   .send({ from: accounts[0], gas: 0, value: 0 })
   .on('transactionHash', function(hash){
@@ -217,7 +222,7 @@ const addUnlockTime = async (unlock_number, timestamp) => {
 
 
 /*
-await addUnlockTimeBatch(["1", "2", "1642637930", "1643501930"])
+await addUnlockTimeBatch(["1642637930", "1642637930", "1642637930", "1643501930"])
 */
 const addUnlockTimeBatch = async (timestamps) => {
   const result = await contract.methods.addUnlockTimeBatch(timestamps)
