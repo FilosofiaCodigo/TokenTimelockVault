@@ -1,6 +1,46 @@
 [
 	{
 		"inputs": [],
+		"name": "buy",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint8",
+				"name": "unlock_number",
+				"type": "uint8"
+			}
+		],
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
 	},
@@ -24,70 +64,23 @@
 		"type": "event"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address[]",
-				"name": "beneficiaries",
-				"type": "address[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "release_amounts",
-				"type": "uint256[]"
-			}
-		],
-		"name": "addBenefiaryBatch",
+		"inputs": [],
+		"name": "withdraw",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "beneficiary",
-				"type": "address"
-			},
+		"inputs": [],
+		"name": "AMOUNT_PER_UNLOCK",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "release_amount",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "addBeneficiary",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint8",
-				"name": "unlock_number",
-				"type": "uint8"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"name": "addUnlockTime",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "timestamps",
-				"type": "uint256[]"
-			}
-		],
-		"name": "addUnlockTimeBatch",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -115,14 +108,8 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "beneficiary_release_amount",
+		"inputs": [],
+		"name": "ENTRY_PRICE",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -136,14 +123,20 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint8",
-				"name": "unlock_number",
-				"type": "uint8"
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
-		"name": "claim",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"name": "is_beneficiary",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -161,13 +154,6 @@
 	},
 	{
 		"inputs": [],
-		"name": "renounceOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "token",
 		"outputs": [
 			{
@@ -180,16 +166,16 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [],
+		"name": "UNLOCK_COUNT",
+		"outputs": [
 			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
-		"name": "transferOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -209,13 +195,6 @@
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "withdrawAllTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]

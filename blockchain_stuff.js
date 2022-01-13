@@ -1,10 +1,10 @@
-const UNLOCKS = 4
 const NETWORK_ID = 4
-const CONTRACT_ADDRESS = "0x53918Aeed746a837437DEa6f9f3F4Bb8EA915614"
+const CONTRACT_ADDRESS = "0x03E59E35BC96060D0a4565Ebd307a3102d5627e1"
 const JSON_CONTRACT_ABI_PATH = "./ContractABI.json"
 var contract
 var accounts
 var web3
+var ENTRY_PRICE
 
 function metamaskReloadCallback() {
   window.ethereum.on('accountsChanged', (accounts) => {
@@ -80,12 +80,15 @@ async function loadDapp() {
 }
 
 const onContractInitCallback = async () => {
-  user_release_amount = await contract.methods.beneficiary_release_amount(accounts[0]).call()
+  AMOUNT_PER_UNLOCK = await contract.methods.AMOUNT_PER_UNLOCK().call()
+  UNLOCK_COUNT = await contract.methods.UNLOCK_COUNT().call()
+  ENTRY_PRICE = await contract.methods.ENTRY_PRICE().call()
+  user_is_beneficiary = await contract.methods.is_beneficiary(accounts[0]).call()
 
   var parent = document.getElementById("claim_buttons")
-  if(user_release_amount > 0)
+  if(user_is_beneficiary)
   {
-    for(i=0; i<UNLOCKS; i++)
+    for(i=0; i<UNLOCK_COUNT; i++)
     {
       var unlock_h = document.createElement("h3")
       unlock_h.innerHTML = "Unlock #" + (i+1)
@@ -154,16 +157,14 @@ const claim = async (unlock_number) => {
   });
 }
 
-//// ADMIN FUNCTIONS ////
-
 /*
-await addBeneficiary("0x730bF3B67090511A64ABA060FbD2F7903536321E", "15")
+await buy()
 */
-const addBeneficiary = async (beneficiary, release_amount) => {
-  const result = await contract.methods.addBeneficiary(beneficiary, web3.utils.toWei(release_amount))
-  .send({ from: accounts[0], gas: 0, value: 0 })
+const buy = async (unlock_number) => {
+  const result = await contract.methods.buy()
+  .send({ from: accounts[0], gas: 0, value: ENTRY_PRICE })
   .on('transactionHash', function(hash){
-    document.getElementById("web3_message").textContent="Adding beneficiary...";
+    document.getElementById("web3_message").textContent="Buying...";
   })
   .on('receipt', function(receipt){
     document.getElementById("web3_message").textContent="Success.";    })
@@ -173,75 +174,10 @@ const addBeneficiary = async (beneficiary, release_amount) => {
 }
 
 /*
-await addBenefiaryBatch(
-  ["0x869c669F683a11DAB09d376eb981B9Bb4bcbA286",
-    "0x869c669F683a11DAB09d376eb981B9Bb4bcbA286",
-    "0x869c669F683a11DAB09d376eb981B9Bb4bcbA286",
-    "0x869c669F683a11DAB09d376eb981B9Bb4bcbA286",
-    "0x869c669F683a11DAB09d376eb981B9Bb4bcbA286"],
-  ["15",
-    "15",
-    "50",
-    "12",
-    "150"]
-  )
+await withdraw()
 */
-
-const addBenefiaryBatch = async (beneficiaries, release_amounts) => {
-  for(i=0; i<release_amounts.length; i++)
-  {
-    release_amounts[i] = web3.utils.toWei(release_amounts[i])
-  }
-  const result = await contract.methods.addBenefiaryBatch(beneficiaries, release_amounts)
-  .send({ from: accounts[0], gas: 0, value: 0 })
-  .on('transactionHash', function(hash){
-    document.getElementById("web3_message").textContent="Adding beneficiary...";
-  })
-  .on('receipt', function(receipt){
-    document.getElementById("web3_message").textContent="Success.";    })
-  .catch((revertReason) => {
-    console.log("ERROR! Transaction reverted: " + revertReason.receipt.transactionHash)
-  });
-}
-
-/*
-await addUnlockTime(2, "1641508298")
-*/
-const addUnlockTime = async (unlock_number, timestamp) => {
-  const result = await contract.methods.addUnlockTime(unlock_number, timestamp)
-  .send({ from: accounts[0], gas: 0, value: 0 })
-  .on('transactionHash', function(hash){
-    document.getElementById("web3_message").textContent="Adding beneficiary...";
-  })
-  .on('receipt', function(receipt){
-    document.getElementById("web3_message").textContent="Success.";    })
-  .catch((revertReason) => {
-    console.log("ERROR! Transaction reverted: " + revertReason.receipt.transactionHash)
-  });
-}
-
-
-/*
-await addUnlockTimeBatch(["1642637930", "1642637930", "1642637930", "1643501930"])
-*/
-const addUnlockTimeBatch = async (timestamps) => {
-  const result = await contract.methods.addUnlockTimeBatch(timestamps)
-  .send({ from: accounts[0], gas: 0, value: 0 })
-  .on('transactionHash', function(hash){
-    document.getElementById("web3_message").textContent="Adding beneficiary...";
-  })
-  .on('receipt', function(receipt){
-    document.getElementById("web3_message").textContent="Success.";    })
-  .catch((revertReason) => {
-    console.log("ERROR! Transaction reverted: " + revertReason.receipt.transactionHash)
-  });
-}
-
-/*
-await withdrawAllTokens()
-*/
-const withdrawAllTokens = async (unlock_times, timestamps) => {
-  const result = await contract.methods.withdrawAllTokens()
+const withdraw = async (unlock_number) => {
+  const result = await contract.methods.withdraw()
   .send({ from: accounts[0], gas: 0, value: 0 })
   .on('transactionHash', function(hash){
     document.getElementById("web3_message").textContent="Withdrawing...";
